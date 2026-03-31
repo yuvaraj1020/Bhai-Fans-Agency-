@@ -5,63 +5,243 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login — BhAAi Fans Digital AA</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}" />
   <style>
-    .auth-container {
-      max-width: 450px;
-      margin: 10rem auto 5rem;
-      padding: 3rem;
-      background: var(--gray-1);
-      border-radius: 4px;
-      border: 1px solid var(--gray-2);
+    .auth-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6rem 1.5rem 3rem;
+      position: relative;
+      background: var(--black);
     }
-    .auth-container h1 { text-align: center; margin-bottom: 2rem; }
-    .auth-form .form-group { margin-bottom: 1.5rem; }
-    .auth-form label { display: block; margin-bottom: 0.5rem; font-family: var(--font-mono); font-size: 0.8rem; color: var(--gray-3); text-transform: uppercase; }
-    .auth-form input { width: 100%; padding: 1rem; border: 1px solid var(--gray-2); background: transparent; color: var(--text-light); border-radius: 4px; font-family: var(--font-body); outline: none; transition: border-color 0.3s ease; }
-    .auth-form input:focus { border-color: var(--accent); }
-    .auth-btn { width: 100%; margin-top: 1rem; text-align: center; }
-    .auth-links { margin-top: 2rem; text-align: center; font-size: 0.9rem; color: var(--gray-3); }
-    .auth-links a { color: var(--accent); text-decoration: none; }
-    #auth-error { color: #ff4444; margin-bottom: 1rem; font-size: 0.9rem; text-align: center; display: none; }
+    .auth-page::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 30% 40%, rgba(167,139,250,0.1) 0%, transparent 55%),
+                  radial-gradient(ellipse at 80% 70%, rgba(56,189,248,0.07) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    .auth-page-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(167,139,250,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(167,139,250,0.03) 1px, transparent 1px);
+      background-size: 72px 72px;
+      mask-image: radial-gradient(ellipse at 50% 50%, black 30%, transparent 80%);
+    }
+    .auth-card {
+      width: 100%; max-width: 460px;
+      background: rgba(13,13,18,0.85);
+      border: 1px solid rgba(167,139,250,0.15);
+      border-radius: 16px;
+      padding: 3rem;
+      backdrop-filter: blur(24px);
+      box-shadow: 0 0 60px rgba(167,139,250,0.1), 0 30px 80px rgba(0,0,0,0.4);
+      position: relative; z-index: 1;
+    }
+    .auth-logo {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      letter-spacing: 0.08em;
+      color: var(--white);
+      text-decoration: none;
+      display: block;
+      margin-bottom: 2.5rem;
+      text-align: center;
+    }
+    .auth-logo span {
+      background: var(--grad-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .auth-title {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      color: var(--white);
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+    .auth-sub {
+      text-align: center;
+      font-size: 0.88rem;
+      color: var(--gray-5);
+      margin-bottom: 2.5rem;
+    }
+    .form-group { margin-bottom: 1.5rem; }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gray-5);
+    }
+    .form-group input {
+      width: 100%;
+      padding: 0.95rem 1.1rem;
+      border: 1px solid rgba(167,139,250,0.15);
+      background: rgba(167,139,250,0.04);
+      color: var(--white);
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+    }
+    .form-group input::placeholder { color: var(--gray-4); }
+    .form-group input:focus {
+      border-color: var(--accent);
+      background: rgba(167,139,250,0.07);
+      box-shadow: 0 0 0 3px rgba(167,139,250,0.1);
+    }
+    .auth-btn {
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 1rem;
+      background: var(--grad-1);
+      color: var(--black);
+      border: none;
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-weight: 600;
+      cursor: none;
+      transition: opacity 0.3s, transform 0.3s, box-shadow 0.3s;
+      box-shadow: 0 4px 20px rgba(167,139,250,0.3);
+    }
+    .auth-btn:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 8px 30px rgba(167,139,250,0.4); }
+    .auth-links {
+      margin-top: 2rem;
+      text-align: center;
+      font-size: 0.88rem;
+      color: var(--gray-4);
+    }
+    .auth-links a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: opacity 0.3s;
+    }
+    .auth-links a:hover { opacity: 0.8; }
+    #auth-error {
+      color: #fb7185;
+      margin-bottom: 1.2rem;
+      font-size: 0.88rem;
+      text-align: center;
+      display: none;
+      padding: 0.75rem;
+      background: rgba(251,113,133,0.08);
+      border: 1px solid rgba(251,113,133,0.2);
+      border-radius: 6px;
+    }
   </style>
 </head>
 <body>
-  <!-- Nav (simplified) -->
+  <div class="cursor"></div>
+  <div class="cursor-follower"></div>
   <nav>
     <a href="/" class="nav-logo">BhAAi Fans<span>.</span></a>
     <a href="/contact.html" class="nav-cta">Get in touch</a>
   </nav>
 
-  <div class="auth-container">
-    <h1>Welcome Back</h1>
-    <div id="auth-error"></div>
-    <form id="login-form" class="auth-form">
-      <div class="form-group">
-        <label for="email">Email Address</label>
-        <input type="email" id="email" name="email" required placeholder="you@example.com" />
+  <div class="auth-page">
+    <div class="auth-page-grid"></div>
+    <div class="auth-card">
+      <!-- Login Section -->
+      <div id="login-section">
+        <a href="/" class="auth-logo">BhAAi Fans<span>.</span></a>
+        <h1 class="auth-title">Welcome Back</h1>
+        <p class="auth-sub">Sign in to continue your journey</p>
+        <div id="auth-error"></div>
+        <form id="login-form">
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" required placeholder="you@example.com" />
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required placeholder="••••••••" />
+          </div>
+          <button type="submit" class="auth-btn">Log In</button>
+        </form>
+        <div class="auth-links" style="display:flex;flex-direction:column;gap:0.8rem;">
+          <a href="#" id="show-forgot-btn">Forgot Password?</a>
+          <div>Don't have an account? <a href="/register.html">Create one</a></div>
+        </div>
       </div>
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" required placeholder="••••••••" />
+
+      <!-- Forgot Password Section -->
+      <div id="forgot-section" style="display: none;">
+        <a href="/" class="auth-logo">BhAAi Fans<span>.</span></a>
+        <h1 class="auth-title">Reset Password</h1>
+        <p class="auth-sub">Enter your email to receive a 6-digit OTP code.</p>
+        <div id="forgot-error" style="color: #fb7185; margin-bottom: 1.2rem; font-size: 0.88rem; text-align: center; display: none; padding: 0.75rem; background: rgba(251,113,133,0.08); border: 1px solid rgba(251,113,133,0.2); border-radius: 6px;"></div>
+        <form id="forgot-form">
+          <div class="form-group">
+            <label for="forgot-email">Email Address</label>
+            <input type="email" id="forgot-email" required placeholder="you@example.com" />
+          </div>
+          <button type="submit" class="auth-btn" id="forgot-submit-btn">Send OTP</button>
+        </form>
+        <div class="auth-links">
+          <a href="#" id="back-to-login-btn">Back to Login</a>
+        </div>
       </div>
-      <button type="submit" class="btn-primary auth-btn">Log In</button>
-    </form>
-    <div class="auth-links">
-      Don't have an account? <a href="/register.html">Create one</a>
+
+      <!-- Reset Password Section -->
+      <div id="reset-section" style="display: none;">
+        <a href="/" class="auth-logo">BhAAi Fans<span>.</span></a>
+        <h1 class="auth-title">Enter OTP</h1>
+        <p class="auth-sub">We sent a 6-digit code to your email.</p>
+        <div id="reset-error" style="color: #fb7185; margin-bottom: 1.2rem; font-size: 0.88rem; text-align: center; display: none; padding: 0.75rem; background: rgba(251,113,133,0.08); border: 1px solid rgba(251,113,133,0.2); border-radius: 6px;"></div>
+        <form id="reset-form">
+          <div class="form-group">
+            <label for="reset-otp">OTP Code</label>
+            <input type="text" id="reset-otp" required placeholder="123456" />
+          </div>
+          <div class="form-group">
+            <label for="new-password">New Password</label>
+            <input type="password" id="new-password" required placeholder="••••••••" />
+          </div>
+          <button type="submit" class="auth-btn">Reset Password</button>
+        </form>
+      </div>
+
     </div>
   </div>
 
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
   <script>
+    const loginSec = document.getElementById('login-section');
+    const forgotSec = document.getElementById('forgot-section');
+    const resetSec = document.getElementById('reset-section');
+    
+    // UI Toggles
+    document.getElementById('show-forgot-btn').addEventListener('click', (e) => {
+      e.preventDefault();
+      loginSec.style.display = 'none';
+      forgotSec.style.display = 'block';
+    });
+    
+    document.getElementById('back-to-login-btn').addEventListener('click', (e) => {
+      e.preventDefault();
+      forgotSec.style.display = 'none';
+      loginSec.style.display = 'block';
+    });
+
+    // Handle Login
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       const errorDiv = document.getElementById('auth-error');
-      
+      errorDiv.style.display = 'none';
       try {
         const res = await fetch('/auth/user/login', {
           method: 'POST',
@@ -69,14 +249,13 @@
           body: JSON.stringify({ email, password })
         });
         const data = await res.json();
-        
         if (res.ok && data.success) {
-          // Redirect to contact page if there is a 'redirect' query param, else to home
           const urlParams = new URLSearchParams(window.location.search);
-          const redirect = urlParams.get('redirect') || '/contact.html';
+          let redirect = urlParams.get('redirect') || '/';
+          if (!redirect.startsWith('/')) redirect = '/' + redirect;
           window.location.href = redirect;
         } else {
-          errorDiv.textContent = data.error || 'Login failed';
+          errorDiv.textContent = data.error || 'Login failed. Please try again.';
           errorDiv.style.display = 'block';
         }
       } catch (err) {
@@ -84,20 +263,89 @@
         errorDiv.style.display = 'block';
       }
     });
-  </script>
-  <script>
-    // Authentication Check and Dynamic Navbar Update
-    fetch('/auth/me')
-      .then(res => res.json())
-      .then(data => {
-        const btn = document.getElementById('nav-login-btn');
-        if (data.authenticated) {
-          if (btn) {
-            btn.textContent = 'Logout';
-            btn.href = (data.type === 'admin') ? '/auth/logout' : '/auth/user/logout';
+
+    // Handle Forgot Password (Send OTP)
+    let resetEmailCache = '';
+    document.getElementById('forgot-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('forgot-email').value;
+      const errorDiv = document.getElementById('forgot-error');
+      const submitBtn = document.getElementById('forgot-submit-btn');
+      
+      errorDiv.style.display = 'none';
+      submitBtn.textContent = 'Sending...';
+      submitBtn.disabled = true;
+      
+      try {
+        const res = await fetch('/auth/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        submitBtn.textContent = 'Send OTP';
+        submitBtn.disabled = false;
+        
+        if (res.ok) {
+          if (data.dev_otp) {
+            const errDiv = document.getElementById('reset-error');
+            errDiv.textContent = 'DEV SERVER: Your OTP is ' + data.dev_otp;
+            errDiv.style.display = 'block';
+            errDiv.style.color = '#c8ff00';
+            errDiv.style.background = 'rgba(200,255,0,0.1)';
+            errDiv.style.borderColor = 'rgba(200,255,0,0.3)';
           }
+          resetEmailCache = email;
+          forgotSec.style.display = 'none';
+          resetSec.style.display = 'block';
+        } else {
+          errorDiv.textContent = data.error || 'Failed to send OTP.';
+          errorDiv.style.display = 'block';
         }
-      });
+      } catch (err) {
+        submitBtn.textContent = 'Send OTP';
+        submitBtn.disabled = false;
+        errorDiv.textContent = 'Network error occurred';
+        errorDiv.style.display = 'block';
+      }
+    });
+
+    // Handle Reset Password
+    document.getElementById('reset-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const otp = document.getElementById('reset-otp').value;
+      const new_password = document.getElementById('new-password').value;
+      const errorDiv = document.getElementById('reset-error');
+      errorDiv.style.display = 'none';
+      
+      try {
+        const res = await fetch('/auth/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: resetEmailCache, otp, new_password })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          const authErrDiv = document.getElementById('auth-error');
+          authErrDiv.textContent = 'Password reset successfully. You can now log in.';
+          authErrDiv.style.display = 'block';
+          authErrDiv.style.color = '#c8ff00';
+          authErrDiv.style.background = 'rgba(200,255,0,0.1)';
+          authErrDiv.style.borderColor = 'rgba(200,255,0,0.3)';
+          
+          resetSec.style.display = 'none';
+          loginSec.style.display = 'block';
+          document.getElementById('login-form').reset();
+          document.getElementById('email').value = resetEmailCache;
+        } else {
+          errorDiv.textContent = data.error || 'Failed to reset password.';
+          errorDiv.style.display = 'block';
+        }
+      } catch (err) {
+        errorDiv.textContent = 'Network error occurred';
+        errorDiv.style.display = 'block';
+      }
+    });
   </script>
 </body>
 </html>

@@ -7,6 +7,7 @@ ADMIN_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 
 
 @admin_bp.before_request
 def require_admin():
+    print(f"[DEBUG admin] Endpoint: {request.endpoint}, Session: {dict(session)}")
     # Allow login and static assets if they exist but block html pages
     if 'agent_id' not in session and request.endpoint and 'login' not in request.endpoint:
         return redirect('/auth/login')

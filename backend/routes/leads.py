@@ -46,6 +46,7 @@ def submit_contact():
 
 @leads_bp.route('/leads', methods=['GET'])
 def get_leads():
+    print(f"[DEBUG leads] Session: {dict(session)}")
     if 'agent_id' not in session:
         return jsonify({'error': 'Unauthorized admin access'}), 401
     

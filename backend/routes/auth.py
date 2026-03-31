@@ -1,6 +1,10 @@
-import hashlib, os
+import hashlib, os, random, time
 from flask import Blueprint, request, session, redirect, jsonify, send_from_directory, render_template
 from models.database import get_db
+from utils.email import send_otp_email
+
+# In-memory store for OTPs. In production, use Redis or DB.
+OTP_STORE = {}
 
 auth_bp = Blueprint('auth', __name__)
 ADMIN_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..','admin-dashboard'))
@@ -95,3 +99,59 @@ def user_logout():
     session.pop('user_name', None)
     session.pop('user_email', None)
     return redirect('/')
+
+@auth_bp.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    d = request.get_json()
+    email = d.get('email', '').strip().lower()
+    
+    conn = get_db()
+    user = conn.execute("SELECT id FROM users WHERE email=?", (email,)).fetchone()
+    conn.close()
+    
+    if not user:
+        # Security: don't reveal if email exists
+        return jsonify({'success': True, 'message': 'If this email exists, an OTP has been sent.'}), 200 
+        
+    otp = str(random.randint(100000, 999999))
+    OTP_STORE[email] = {
+        'otp': otp,
+        'expires': time.time() + 600 # 10 minutes
+    }
+    
+    success = send_otp_email(email, otp)
+    if not success and os.getenv('FLASK_ENV') == 'development':
+        return jsonify({'success': True, 'dev_otp': otp, 'message': 'SMTP failed. DEV MODE active.'})
+        
+    return jsonify({'success': True, 'message': 'If this email exists, an OTP has been sent.'})
+
+@auth_bp.route('/reset-password', methods=['POST'])
+def reset_password():
+    d = request.get_json()
+    email = d.get('email', '').strip().lower()
+    otp = d.get('otp', '').strip()
+    new_pw = d.get('new_password', '')
+    
+    if not email or not otp or not new_pw:
+        return jsonify({'error': 'Missing fields'}), 400
+        
+    record = OTP_STORE.get(email)
+    if not record:
+        return jsonify({'error': 'Invalid or expired OTP'}), 400
+        
+    if time.time() > record['expires']:
+        del OTP_STORE[email]
+        return jsonify({'error': 'OTP has expired'}), 400
+        
+    if record['otp'] != otp:
+        return jsonify({'error': 'Invalid OTP'}), 400
+        
+    # Reset is successful
+    pw_hash = hashlib.sha256(new_pw.encode()).hexdigest()
+    conn = get_db()
+    conn.execute("UPDATE users SET password_hash=? WHERE email=?", (pw_hash, email))
+    conn.commit()
+    conn.close()
+    
+    del OTP_STORE[email]
+    return jsonify({'success': True, 'message': 'Password reset successfully. You can now log in.'})

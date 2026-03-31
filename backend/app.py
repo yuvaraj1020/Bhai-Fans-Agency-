@@ -38,6 +38,10 @@ def index():
 
 @app.route('/<path:filename>.html')
 def serve_html(filename):
+    file_path = os.path.join(FRONTEND_DIR, 'pages', f"{filename}.html")
+    if not os.path.exists(file_path):
+        from flask import abort
+        abort(404)
     return render_template(f"{filename}.html")
 
 
